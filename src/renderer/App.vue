@@ -1,15 +1,23 @@
 <template>
   <div id="app">
+    <SystemInformation/>
     <router-view></router-view>
   </div>
 </template>
 
 <script>
-  export default {
-    name: 'electron-api'
-  }
+import SystemInformation from "@/components/SystemInformation";
+export default {
+  name: "electron-api",
+  components: { SystemInformation }
+};
 </script>
 
-<style>
-  /* CSS */
+<style lang="scss">
+html, body, #app {
+  height: 100%;
+}
+#app {
+  background: $gray_1;
+}
 </style>

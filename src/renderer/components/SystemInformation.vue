@@ -1,6 +1,5 @@
 <template>
-  <div>
-    <div class="title">Information</div>
+  <div class="systemInformation">
     <div class="items">
       <div class="item">
         <div class="name">Path:</div>
@@ -31,43 +30,55 @@
 </template>
 
 <script>
-  export default {
-    data () {
-      return {
-        electron: process.versions.electron,
-        name: this.$route.name,
-        node: process.versions.node,
-        path: this.$route.path,
-        platform: require('os').platform(),
-        vue: require('vue/package.json').version
-      }
-    }
+export default {
+  data() {
+    return {
+      electron: process.versions.electron,
+      name: this.$route.name,
+      node: process.versions.node,
+      path: this.$route.path,
+      platform: require("os").platform(),
+      vue: require("vue/package.json").version
+    };
   }
+};
 </script>
 
 <style scoped>
-  .title {
-    color: #888;
-    font-size: 18px;
-    font-weight: initial;
-    letter-spacing: .25px;
-    margin-top: 10px;
-  }
+.systemInformation {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 999;
+  padding: 10px;
+  border-radius: 0 0 0 5px;
+  background: rgba(0, 0, 0, 0.3);
+}
 
-  .items { margin-top: 8px; }
+.title {
+  color: #888;
+  font-size: 18px;
+  font-weight: initial;
+  letter-spacing: 0.25px;
+  margin-top: 10px;
+}
 
-  .item {
-    display: flex;
-    margin-bottom: 6px;
-  }
+.items {
+  margin-top: 8px;
+}
 
-  .item .name {
-    color: #6a6a6a;
-    margin-right: 6px;
-  }
+.item {
+  display: flex;
+  margin-bottom: 6px;
+}
 
-  .item .value {
-    color: #35495e;
-    font-weight: bold;
-  }
+.item .name {
+  color: #6a6a6a;
+  margin-right: 6px;
+}
+
+.item .value {
+  color: #35495e;
+  font-weight: bold;
+}
 </style>
