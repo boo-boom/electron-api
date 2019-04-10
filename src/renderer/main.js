@@ -19,6 +19,7 @@ import {
   Container,
   Aside,
   Tree,
+  Tooltip,
 } from 'element-ui'
 
 import App from './App'
@@ -49,6 +50,7 @@ Vue.use(Option)
 Vue.use(Container)
 Vue.use(Aside)
 Vue.use(Tree)
+Vue.use(Tooltip)
 
 Vue.prototype.$message = Message;
 
