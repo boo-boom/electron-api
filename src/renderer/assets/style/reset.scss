@@ -48,4 +48,6 @@ input::-webkit-search-decoration,
 input::-webkit-search-cancel-button {
   display: none;
 }
-
+* {
+  box-sizing: border-box;
+}

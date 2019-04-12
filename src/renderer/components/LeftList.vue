@@ -12,8 +12,9 @@
       :data="treeData"
       :props="defaultProps"
       :filter-node-method="filterNode"
-      default-expand-all
+      @node-click="curTreeClick"
       highlight-current
+      accordion
       ref="tree">
     </el-tree>
   </div>
@@ -22,61 +23,40 @@
 <script>
 export default {
   name: "left-list",
+  props: {
+    tree: {
+      type: Array,
+      default: []
+    }
+  },
   data() {
     return {
       restaurants: [],
       searchKey: "",
       filterText: '',
-      treeData: [
-        {
-          id: 1,
-          label: "一级 1",
-          children: [
-            {
-              id: 4,
-              label: "二级 1-1",
-            }
-          ]
-        },
-        {
-          id: 2,
-          label: "一级 2",
-          children: [
-            {
-              id: 5,
-              label: "二级 2-1"
-            },
-            {
-              id: 6,
-              label: "二级 2-2"
-            }
-          ]
-        },
-        {
-          id: 3,
-          label: "一级 3",
-          children: [
-            {
-              id: 7,
-              label: "二级 3-1"
-            },
-            {
-              id: 8,
-              label: "二级 3-2"
-            }
-          ]
-        }
-      ],
+      treeData: this.tree,
       defaultProps: {
         children: 'children',
         label: 'label'
       }
     };
   },
+  mounted() {
+    if(!this.treeData.length) {
+      this.$nextTick(() => {
+        this.treeData = this.tree;
+      })
+    }
+  },
   methods: {
     filterNode(value, data) {
       if (!value) return true;
       return data.label.indexOf(value) !== -1;
+    },
+    curTreeClick(data) {
+      if(data.methodIndex !== undefined) {
+        this.$emit('getCurApiIndex', data.methodIndex);
+      }
     }
   },
   watch: {
@@ -90,7 +70,9 @@ export default {
 <style lang="scss" scoped>
 .left-list {
   min-height: 100%;
-  background: $white;
+  height: 100vh;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
   .search {
     padding: 10px;
     background: $gray_2;
@@ -98,6 +80,11 @@ export default {
       width: 100%;
     }
   }
+
+  /deep/ .el-tree-node__children {
+    background: $gray_5;
+  }
 }
+
 </style>
 

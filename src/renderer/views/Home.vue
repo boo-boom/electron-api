@@ -2,7 +2,7 @@
   <div class="home-container">
     <el-row>
       <el-col :span="6" class="left">
-        <LeftList/>
+        <LeftList :tree="treeData" @getCurApiIndex="getCurApiIndex" />
       </el-col>
       <el-col :span="18" class="right">
         <div class="main">
@@ -19,13 +19,13 @@
 
               <el-row :gutter="20">
                 <el-col class="input" :span="12">
-                  <el-form-item label="活动名称" prop="apiName">
-                    <el-input size="mini" v-model="baseTemplate.apiName" placeholder="请输入内容"></el-input>
+                  <el-form-item label="接口名称" prop="methodName">
+                    <el-input size="mini" v-model="baseTemplate.methodName" placeholder="请输入内容"></el-input>
                   </el-form-item>
                 </el-col>
                 <el-col class="input" :span="12">
-                  <el-form-item label="接口描述" prop="title">
-                    <el-input size="mini" v-model="baseTemplate.title" placeholder="请输入内容"></el-input>
+                  <el-form-item label="接口描述" prop="description">
+                    <el-input size="mini" v-model="baseTemplate.description" placeholder="请输入内容"></el-input>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -45,26 +45,24 @@
 
               <el-row :gutter="20">
                 <el-col class="input" :span="12">
+                  <el-form-item label="接口状态" prop="state">
+                    <el-select size="mini" v-model="baseTemplate.state" placeholder="请选择接口状态">
+                      <el-option label="OPEN" value="true"></el-option>
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col class="input" :span="12">
                   <el-form-item label="安全级别" prop="securityLevel">
                     <el-radio
                       border
                       size="mini"
                       v-model="baseTemplate.securityLevel"
-                      label="Anonym"
-                    >Anonym</el-radio>
+                      label="Anonym">Anonym</el-radio>
                     <el-radio
                       border
                       size="mini"
                       v-model="baseTemplate.securityLevel"
-                      label="User"
-                    >User</el-radio>
-                  </el-form-item>
-                </el-col>
-                <el-col class="input" :span="12">
-                  <el-form-item label="接口状态" prop="state">
-                    <el-select size="mini" v-model="baseTemplate.state" placeholder="请选择接口状态">
-                      <el-option label="OPEN" value="true"></el-option>
-                    </el-select>
+                      label="User">User</el-radio>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -120,13 +118,7 @@
               <div class="title">
                 <span>返回数据</span>
               </div>
-              <!-- <div class="json-view"> -->
-                <!-- <div class="tabs">
-                  <div class="tab-item">Query</div>
-                  <div class="tab-item">JSON</div>
-                </div> -->
-              <JsonEditor/>
-              <!-- </div> -->
+              <JsonEditor :apiIndex="apiListIndex" :apiData="curApiData" />
             </div>
           </el-form>
         </div>
@@ -137,12 +129,19 @@
 </template>
 
 <script>
+import jsonData from "./../../../static/info.json";
 import LeftList from "@/components/LeftList";
 import JsonEditor from "@/components/JsonEditor";
 
 export default {
   name: "home-container",
   components: { LeftList, JsonEditor },
+  mounted() {
+    this.apiList = jsonData.apiList;
+    this.treeData = this.getMenuTree(this.apiList);
+    this.curApiData = this.apiList[this.apiListIndex];
+    this.getBaseTemplate(this.curApiData);
+  },
   data() {
     const verApiName = (rule, value, callback) => {
       if (!value) {
@@ -154,10 +153,11 @@ export default {
       callback();
     };
     return {
-      apiLevel: "1",
-      baseTemplate: {
-        state: 'OPEN'
-      },
+      apiList: [],
+      treeData: [],
+      apiListIndex: 0,
+      curApiData: {},
+      baseTemplate: {},
       params: [
         {
           paramName: "",
@@ -167,10 +167,10 @@ export default {
         }
       ],
       rules: {
-        apiName: [
+        methodName: [
           { required: true, validator: verApiName, trigger: "change" }
         ],
-        title: [
+        description: [
           { required: true, message: "请输入接口描述", trigger: "change" }
         ],
         groupOwner: [
@@ -189,16 +189,73 @@ export default {
     }
   },
   methods: {
+    getMenuTree(apiList) {
+      const map = {}, dest = [];
+      for(let i = 0; i < apiList.length; i++) {
+        const curI = apiList[i];
+        if(!map[curI.groupName]) {
+          dest.push({
+            label: curI.groupName,
+            groupIndex: i,
+            children: [
+              {
+                label: curI.methodName.split('.')[1],
+                methodIndex: i
+              }
+            ]
+          })
+          map[curI.groupName] = curI;
+        } else {
+          for(let j = 0; j < dest.length; j++) {
+            const curJ = dest[j];
+            if(curJ.label === curI.groupName) {
+              curJ.children.push({
+                label: curI.methodName.split('.')[1],
+                methodIndex: i
+              });
+            }
+          }
+        }
+      }
+      return dest;
+    },
+    getCurApiIndex(apiListIndex) {
+      this.apiListIndex = apiListIndex;
+      this.curApiData = jsonData.apiList[apiListIndex];
+      this.getBaseTemplate(this.curApiData);
+      console.log(apiListIndex)
+    },
+    getBaseTemplate(curApiData) {
+      this.baseTemplate = {
+        methodName: this.curApiData.methodName,
+        description: this.curApiData.description,
+        groupOwner: this.curApiData.groupOwner,
+        methodOwner: this.curApiData.methodOwner,
+        securityLevel: this.curApiData.securityLevel,
+        state: 'OPEN',
+      }
+    },
+    // 生成文档
     generateDoc(formName, name) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          this.$message.error("请输入接口名称");
+          this.$message({
+            customClass: 'msgBox',
+            showClose: true,
+            message: '验证通过',
+            type: 'success'
+          });
+          // 更新左侧列表
+          // this.apiList[this.apiListIndex].methodName = this.baseTemplate.methodName;
+          // this.treeData = this.getMenuTree(this.apiList);
+          // console.log(this.getMenuTree(this.apiList));
+          // console.log(this.apiListIndex, this.baseTemplate, this.apiList[this.apiListIndex].methodName)
         } else {
+          this.$message.error("请输入接口名称");
           return false;
         }
       });
     },
-
     // 添加参数
     addParam() {
       this.params.push({
@@ -229,17 +286,14 @@ export default {
 .home-container {
   height: 100%;
   min-height: 100vh;
-  box-sizing: border-box;
   .el-row {
     height: 100%;
   }
   .left {
     height: 100%;
-    padding: 10px;
   }
   .right {
     height: 100%;
-    padding: 10px 10px 10px 0;
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
@@ -270,11 +324,10 @@ export default {
         line-height: 30px;
       }
     }
-    // .json-view {
-    //   border-radius: 3px;
-    //   background: $gray_5;
-    // }
   }
+}
+.msgBox {
+  left: calc(50% + 144px);
 }
 </style>
 

@@ -39,8 +39,8 @@
 </template>
 
 <script>
-import jsonData from "./../../../static/info.json";
-import mockData from "./../../../static/mock.json";
+// import jsonData from "./../../../static/info.json";
+// import mockData from "./../../../static/mock.json";
 import { nodesPath } from "@/assets/utils/nodes.js";
 import TreeField from "@/components/TreeField";
 import nanoid from 'nanoid';
@@ -51,6 +51,18 @@ import "brace/mode/json";
 export default {
   name: "jsonEditor",
   components: { TreeField },
+  props: {
+    apiIndex: {
+      type: Number,
+      default: 0
+    },
+    apiData: {
+      type: Object,
+      default() {
+        return {}
+      }
+    }
+  },
   data() {
     return {
       respStructList: [],
@@ -60,14 +72,13 @@ export default {
     };
   },
   mounted() {
-    const curApi = jsonData.apiList[0];
-    const resList = curApi.respStructList;
-    const returnType = curApi.returnType;
-
-    this.respStructList = this.getJsonTree(resList, returnType);
-
-    // console.log(this.respStructList);
-    // console.log(JSON.stringify(this.respStructList));
+    this.$nextTick(() => {
+      const curApi = this.apiData;
+      const resList = curApi.respStructList;
+      const returnType = curApi.returnType;
+      this.respStructList = this.getJsonTree(resList, returnType);
+      // console.log(JSON.stringify(this.respStructList));
+    })
   },
   methods: {
     tree(index) {
@@ -159,7 +170,7 @@ export default {
         } else {
           this.dialogVisible = false;
           this.jsonState.schema = generateSchema(this.jsonState.data);
-          this.respStructList = this.getJsonSchemaTree(mockData);
+          this.respStructList = this.getJsonSchemaTree(this.jsonState.schema.properties);
         }
       } else {
         this.$notify.error({
@@ -174,6 +185,14 @@ export default {
     },
   },
   watch: {
+    apiIndex(newVal, oldVal) {
+      if(newVal !== oldVal) {
+        const curApi = this.apiData;
+        const resList = curApi.respStructList;
+        const returnType = curApi.returnType;
+        this.respStructList = this.getJsonTree(resList, returnType);
+      }
+    },
     // 创建json-editor
     dialogVisible(newVal, oldVal) {
       if (newVal) {
