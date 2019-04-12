@@ -120,13 +120,13 @@
               <div class="title">
                 <span>返回数据</span>
               </div>
-              <div class="json-view">
+              <!-- <div class="json-view"> -->
                 <!-- <div class="tabs">
                   <div class="tab-item">Query</div>
                   <div class="tab-item">JSON</div>
                 </div> -->
-                <JsonEditor/>
-              </div>
+              <JsonEditor/>
+              <!-- </div> -->
             </div>
           </el-form>
         </div>
@@ -270,10 +270,10 @@ export default {
         line-height: 30px;
       }
     }
-    .json-view {
-      border-radius: 3px;
-      background: $gray_5;
-    }
+    // .json-view {
+    //   border-radius: 3px;
+    //   background: $gray_5;
+    // }
   }
 }
 </style>

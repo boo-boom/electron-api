@@ -20,6 +20,9 @@ import {
   Aside,
   Tree,
   Tooltip,
+  Dialog,
+  MessageBox,
+  Notification,
 } from 'element-ui'
 
 import App from './App'
@@ -51,8 +54,12 @@ Vue.use(Container)
 Vue.use(Aside)
 Vue.use(Tree)
 Vue.use(Tooltip)
+Vue.use(Dialog)
 
 Vue.prototype.$message = Message;
+Vue.prototype.$msgbox = MessageBox;
+Vue.prototype.$confirm = MessageBox.confirm;
+Vue.prototype.$notify = Notification;
 
 /* eslint-disable no-new */
 new Vue({

@@ -2,14 +2,14 @@
   <div class="tree-field">
     <el-row :gutter="10">
       <el-col class="indent" :span="11" :style="{paddingLeft:`${depth * 30 + 20}px`}">
-        <i :class="[`el-icon-caret-${showChildren?'top':'bottom'}`]" v-if="nodesLen" @click="toggle(depth, index)"></i>
+        <i :class="[`el-icon-caret-${item.showNodes?'top':'bottom'}`]" v-if="nodesLen" @click="toggle(item)"></i>
         <i v-else></i>
         <el-input size="mini" placeholder="字段名" v-model="item.name"></el-input>
       </el-col>
       <el-col :span="7">
         <el-input size="mini" placeholder="类型" v-model="item.type" v-if="!nodesLen || !item.type"></el-input>
         <el-tooltip class="pd-0" effect="dark" :content="item.type" placement="top" v-if="item.type && nodesLen">
-          <el-input size="mini" placeholder="类型" v-model="item.type">
+          <el-input size="mini" placeholder="类型" v-model="item.type" :change="editIsList(item)">
             <i slot="suffix" class="el-input__icon el-icon-warning" v-if="item.isList"></i>
           </el-input>
         </el-tooltip>
@@ -21,28 +21,30 @@
         </el-tooltip>
       </el-col>
       <el-col :span="2" class="btns">
-        <i class="el-icon-close"></i>
+        <i class="el-icon-close" @click="removeField(tree, index)"></i>
         <el-tooltip class="pd-0" effect="dark" :content="tooltip(item.type).text" placement="top">
           <el-button type="text" icon="el-icon-plus" @click="addField(tree, index, item)"></el-button>
         </el-tooltip>
       </el-col>
     </el-row>
-    <!-- {{tree}} -->
-    <div class="children" v-show="showChildren" v-if="nodesLen">
+    <div class="children" v-if="nodesLen && item.showNodes">
       <tree-field
         v-for="(child,idx) in item.nodes"
-        :key="`${child.name}-${idx}`"
+        :key="child.nanoid"
         :item="child"
         :index="idx"
         :depth="depth + 1"
         :tree="tree + (idx + ',')"
         @addField="addField"
+        @removeField="removeField"
       />
     </div>
   </div>
 </template>
 
 <script>
+import nanoid from 'nanoid';
+import { nodesPath } from "@/assets/utils/nodes.js";
 export default {
   name: "treeField",
   props: {
@@ -63,47 +65,53 @@ export default {
     tree: {
       type: String,
       default: ''
-    }
+    },
   },
   data() {
     return {
-      showChildren: false,
       showListIocn: false,
     };
   },
   computed: {
     nodesLen: function () {
       return this.item.nodes && this.item.nodes.length;
-    }
+    },
   },
   methods: {
-    toggle(depth, index) {
-      this.showChildren = !this.showChildren;
+    toggle(item) {
+      if(this.nodesLen) {
+        item.showNodes = !item.showNodes;
+      }
     },
     addField(tree, index, item) {
       const _item = {
         desc: "",
         isList: false,
-        name: "",
+        name: `Field_${nanoid(5)}`,
         nodes: [],
         type: "string"
       };
       const tag = this.tooltip(item.type).tag;
       if( tag === 'child') {
-        this.showChildren = tree;
         item.nodes.push(_item);
       } else {
         this.$emit('addField', tree, index, _item);
       }
     },
+    removeField(tree, index) {
+      this.$emit('removeField', tree, index);
+    },
     // 判断是否是子节点，用于判断添加字段时的逻辑处理
     tooltip(type) {
-      const test = /^Api_/ig.test(type) || /^list\[/ig.test(type);
+      const test = /^Api_/ig.test(type) ||
+                   /^list\[/ig.test(type) ||
+                   type == 'array' ||
+                   type == 'object';
       return test ? {tag: 'child', text: '添加子节点'} : {tag: 'sibling', text: '添加兄弟节点'};
     },
-    showListIcon(type) {
-      return /^list\[/ig.test(type);
-    }
+    editIsList(item) {
+      item.isList = /^list\[(\w+)\]$/ig.test(item.type) ? true : false;
+    },
   }
 };
 </script>
