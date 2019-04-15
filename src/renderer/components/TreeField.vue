@@ -89,13 +89,17 @@ export default {
         isList: false,
         name: `Field_${nanoid(5)}`,
         nodes: [],
-        type: "string"
+        type: "object"
       };
       const tag = this.tooltip(item.type).tag;
+      // this.$emit('addField', tree, index, _item, tag);
       if( tag === 'child') {
         item.nodes.push(_item);
+        console.log(item.nodes)
+        // this.$emit('addField', tree, index, _item, tag);
+        // console.log(item.name, item.type)
       } else {
-        this.$emit('addField', tree, index, _item);
+        // this.$emit('addField', tree, index, _item, tag);
       }
     },
     removeField(tree, index) {

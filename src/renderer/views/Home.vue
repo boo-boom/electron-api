@@ -15,6 +15,7 @@
             <div class="layout">
               <div class="title">
                 <span>基本设置</span>
+                <el-button type="primary" size="mini" @click="newDoc">新建文档</el-button>
               </div>
 
               <el-row :gutter="20">
@@ -124,7 +125,27 @@
         </div>
       </el-col>
     </el-row>
-
+    <!-- 新建文档选择分组弹窗 -->
+    <el-dialog
+      title="选择分组"
+      width="40%"
+      :visible.sync="groupModelVisible"
+      :before-close="groupModelClose">
+      <div>
+        <el-select style="width:100%" size="small" v-model="searchGroup" filterable placeholder="请选择">
+          <el-option
+            v-for="item in groupSelect"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="groupModelVisible = false">取 消</el-button>
+        <el-button size="mini" type="primary" @click="groupModelVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -147,7 +168,7 @@ export default {
       if (!value) {
         return callback(new Error("请输入接口名称"));
       }
-      if (!/^node_([a-z]+\.[a-z]+)$/gi.test(value)) {
+      if (!/^node_(\w+\.[a-zA-Z0-9]+)$/gi.test(value)) {
         return callback(new Error("接口名格式错误"));
       }
       callback();
@@ -185,7 +206,25 @@ export default {
         state: [
           { required: true, message: "请输入接口状态", trigger: "change" }
         ]
-      }
+      },
+      groupModelVisible: false,
+      groupSelect: [{
+        value: '选项1',
+        label: '黄金糕'
+      }, {
+        value: '选项2',
+        label: '双皮奶'
+      }, {
+        value: '选项3',
+        label: '蚵仔煎'
+      }, {
+        value: '选项4',
+        label: '龙须面'
+      }, {
+        value: '选项5',
+        label: '北京烤鸭'
+      }],
+      searchGroup: ''
     }
   },
   methods: {
@@ -246,10 +285,8 @@ export default {
             type: 'success'
           });
           // 更新左侧列表
-          // this.apiList[this.apiListIndex].methodName = this.baseTemplate.methodName;
-          // this.treeData = this.getMenuTree(this.apiList);
-          // console.log(this.getMenuTree(this.apiList));
-          // console.log(this.apiListIndex, this.baseTemplate, this.apiList[this.apiListIndex].methodName)
+          this.apiList[this.apiListIndex].methodName = this.baseTemplate.methodName;
+          this.treeData = this.getMenuTree(this.apiList);
         } else {
           this.$message.error("请输入接口名称");
           return false;
@@ -277,6 +314,23 @@ export default {
         });
       }
       return params;
+    },
+    // 新建文档
+    newDoc() {
+      // 初始化现有数据
+      this.apiListIndex = 0;
+      this.curApiData = {};
+      this.baseTemplate = {};
+
+      this.groupSelect = this.treeData;
+      this.groupModelVisible = true;
+    },
+    groupModelClose(done) {
+      this.$confirm('确认关闭？')
+        .then(_ => {
+          done();
+        })
+        .catch(_ => {});
     }
   }
 };

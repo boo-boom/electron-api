@@ -9,9 +9,11 @@
     </div>
     <el-tree
       class="filter-tree"
+      node-key="groupIndex"
       :data="treeData"
       :props="defaultProps"
       :filter-node-method="filterNode"
+      :default-expanded-keys="[0]"
       @node-click="curTreeClick"
       highlight-current
       accordion
@@ -34,19 +36,11 @@ export default {
       restaurants: [],
       searchKey: "",
       filterText: '',
-      treeData: this.tree,
       defaultProps: {
         children: 'children',
         label: 'label'
       }
     };
-  },
-  mounted() {
-    if(!this.treeData.length) {
-      this.$nextTick(() => {
-        this.treeData = this.tree;
-      })
-    }
   },
   methods: {
     filterNode(value, data) {
@@ -62,6 +56,11 @@ export default {
   watch: {
     filterText(val) {
       this.$refs.tree.filter(val);
+    }
+  },
+  computed: {
+    treeData() {
+      return this.tree
     }
   }
 };

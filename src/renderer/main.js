@@ -59,6 +59,7 @@ Vue.use(Dialog)
 Vue.prototype.$message = Message;
 Vue.prototype.$msgbox = MessageBox;
 Vue.prototype.$confirm = MessageBox.confirm;
+Vue.prototype.$alert = MessageBox.alert;
 Vue.prototype.$notify = Notification;
 
 /* eslint-disable no-new */

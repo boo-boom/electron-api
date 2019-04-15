@@ -73,14 +73,26 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      const curApi = this.apiData;
-      const resList = curApi.respStructList;
-      const returnType = curApi.returnType;
-      this.respStructList = this.getJsonTree(resList, returnType);
-      // console.log(JSON.stringify(this.respStructList));
+      this.init();
     })
   },
   methods: {
+    init() {
+      const curApi = this.apiData;
+      const resList = curApi.respStructList;
+      if(resList && resList.length) {
+        const returnType = curApi.returnType;
+        this.respStructList = this.getJsonTree(resList, returnType);
+      } else {
+        this.respStructList = [{
+          desc: "",
+          isList: false,
+          name: `Field_${nanoid(5)}`,
+          nodes: [],
+          type: "string"
+        }]
+      }
+    },
     tree(index) {
       // 将递归后的层级保存起来
       const arr = [];
@@ -129,16 +141,32 @@ export default {
       return newData;
     },
     // 添加字段
-    addField(tree, index, item) {
+    addField(tree, index, item, tag) {
       const { evalStr, nodesLen } = nodesPath(tree);
-      if (nodesLen > 1) {
-        // 递归多层时，取上一级，即当前的父级并push数据
-        const _evalStr = evalStr.replace(/\.nodes\[[0-9]*\]$/gi, "");
-        eval(_evalStr).nodes.splice(index + 1, 0, item);
-      } else {
-        // 只为第一层时直接push
-        this.respStructList.splice(index + 1, 0, item);
-      }
+      console.log(evalStr, nodesLen, tag)
+      // eval(evalStr).nodes.push(item)
+      // if(tag === 'child') {
+      //   console.log(index)
+      //   // eval(evalStr).nodes.push(item)
+      // } else {
+      //   // 递归多层时，取上一级，即当前的父级并push数据
+      //   const _evalStr = evalStr.replace(/\.nodes\[[0-9]*\]$/gi, "");
+      //   // eval(_evalStr).nodes.splice(index + 1, 0, item);
+      // }
+      // if (nodesLen > 1) {
+      //   // 递归多层时，取上一级，即当前的父级并push数据
+      //   const _evalStr = evalStr.replace(/\.nodes\[[0-9]*\]$/gi, "");
+      //   // eval(_evalStr).nodes.push(item)
+      //   if(tag === 'child') {
+      //     console.log(index)
+      //   } else {
+      //     eval(_evalStr).nodes.splice(index + 1, 0, item);
+      //   }
+      // } else {
+      //   // 只为第一层时直接push
+      //   // this.respStructList.splice(index + 1, 0, item);
+      // }
+      // console.log(this.respStructList)
     },
     // 删除字段
     removeField(tree, index) {
@@ -185,14 +213,19 @@ export default {
     },
   },
   watch: {
-    apiIndex(newVal, oldVal) {
-      if(newVal !== oldVal) {
-        const curApi = this.apiData;
-        const resList = curApi.respStructList;
-        const returnType = curApi.returnType;
-        this.respStructList = this.getJsonTree(resList, returnType);
+    apiData(newVal, oldVal) {
+      if(newVal && newVal !== oldVal) {
+        this.init()
       }
     },
+    // apiIndex(newVal, oldVal) {
+    //   if(newVal !== oldVal) {
+    //     const curApi = this.apiData;
+    //     const resList = curApi.respStructList;
+    //     const returnType = curApi.returnType;
+    //     this.respStructList = this.getJsonTree(resList, returnType);
+    //   }
+    // },
     // 创建json-editor
     dialogVisible(newVal, oldVal) {
       if (newVal) {
