@@ -1,7 +1,6 @@
 <template>
   <div class="json-editor">
     <el-button type="primary" size="small" @click="dialogVisible=true">导入 JSON</el-button>
-    <el-button type="success" size="small" @click="generateDoc">生成文档</el-button>
     <el-dialog
       title="导入 JSON"
       width="50%"
@@ -163,7 +162,10 @@ export default {
         } else {
           this.dialogVisible = false;
           this.jsonState.schema = generateSchema(this.jsonState.data);
-          this.respStructList = this.getJsonSchemaTree(this.jsonState.schema.properties);
+          this.$store.dispatch('setRespStructList', {
+            tree: null,
+            resList: this.getJsonSchemaTree(this.jsonState.schema.properties)
+          });
         }
       } else {
         this.$notify.error({
@@ -171,10 +173,6 @@ export default {
           message: "json不能为空"
         });
       }
-    },
-    // 生成文档
-    generateDoc() {
-      console.log(this.respStructList);
     },
   },
   computed: {

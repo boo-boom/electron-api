@@ -7,7 +7,7 @@
       <el-col :span="18" class="right">
         <div class="main">
           <el-form
-            :model="baseTemplate"
+            :model="lastObjct"
             :rules="rules"
             ref="ruleForm"
             label-width="100px"
@@ -15,18 +15,17 @@
             <div class="layout">
               <div class="title">
                 <span>基本设置</span>
-                <el-button type="primary" size="mini" @click="newDoc">新建文档</el-button>
               </div>
 
               <el-row :gutter="20">
                 <el-col class="input" :span="12">
                   <el-form-item label="接口名称" prop="methodName">
-                    <el-input size="mini" v-model="baseTemplate.methodName" placeholder="请输入内容"></el-input>
+                    <el-input size="mini" v-model="lastObjct.methodName" placeholder="请输入内容"></el-input>
                   </el-form-item>
                 </el-col>
                 <el-col class="input" :span="12">
                   <el-form-item label="接口描述" prop="description">
-                    <el-input size="mini" v-model="baseTemplate.description" placeholder="请输入内容"></el-input>
+                    <el-input size="mini" v-model="lastObjct.description" placeholder="请输入内容"></el-input>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -34,12 +33,12 @@
               <el-row :gutter="20">
                 <el-col class="input" :span="12">
                   <el-form-item label="负责组长" prop="groupOwner">
-                    <el-input size="mini" v-model="baseTemplate.groupOwner" placeholder="请输入内容"></el-input>
+                    <el-input size="mini" v-model="lastObjct.groupOwner" placeholder="请输入内容"></el-input>
                   </el-form-item>
                 </el-col>
                 <el-col class="input" :span="12">
                   <el-form-item label="接口负责" prop="methodOwner">
-                    <el-input size="mini" v-model="baseTemplate.methodOwner" placeholder="请输入内容"></el-input>
+                    <el-input size="mini" v-model="lastObjct.methodOwner" placeholder="请输入内容"></el-input>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -47,7 +46,7 @@
               <el-row :gutter="20">
                 <el-col class="input" :span="12">
                   <el-form-item label="接口状态" prop="state">
-                    <el-select size="mini" v-model="baseTemplate.state" placeholder="请选择接口状态">
+                    <el-select size="mini" v-model="lastObjct.state" placeholder="请选择接口状态">
                       <el-option label="OPEN" value="true"></el-option>
                     </el-select>
                   </el-form-item>
@@ -57,60 +56,53 @@
                     <el-radio
                       border
                       size="mini"
-                      v-model="baseTemplate.securityLevel"
+                      v-model="lastObjct.securityLevel"
                       label="Anonym">Anonym</el-radio>
                     <el-radio
                       border
                       size="mini"
-                      v-model="baseTemplate.securityLevel"
+                      v-model="lastObjct.securityLevel"
                       label="User">User</el-radio>
                   </el-form-item>
                 </el-col>
               </el-row>
             </div>
 
-            <el-button
-              type="success"
-              size="mini"
-              @click="generateDoc('ruleForm')">生成
-            </el-button>
-
             <div class="layout">
               <div class="title">
                 <span>请求参数</span>
               </div>
-              <el-row :gutter="10" v-for="(param,index) in params" :key="index">
-                <el-col class="input" :span="5">
-                  <el-form-item label-width="0" prop="paramName">
-                    <el-input size="mini" v-model="param.paramName" placeholder="参数描述"></el-input>
-                  </el-form-item>
-                </el-col>
-                <el-col class="input" :span="3">
-                  <el-form-item label-width="0" prop="paramType">
-                    <el-select size="mini" v-model="param.paramType" placeholder="参数类型">
-                      <el-option label="text" value="text"></el-option>
-                      <el-option label="file" value="file"></el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
+              <el-row :gutter="10" v-for="(param,index) in lastObjct.params" :key="index">
                 <el-col class="input" :span="6">
-                  <el-form-item label-width="0" prop="paramDesc">
-                    <el-input size="mini" v-model="param.paramDesc" placeholder="参数描述"></el-input>
+                  <el-form-item label-width="0" prop="paramName">
+                    <el-input size="mini" v-model="param.name" placeholder="参数描述"></el-input>
                   </el-form-item>
                 </el-col>
-                <el-col class="input" :span="3">
-                  <el-form-item label-width="0" prop="paramRequired">
-                    <el-select size="mini" v-model="param.paramRequired" placeholder="是否必传">
-                      <el-option label="必传" value="true"></el-option>
-                      <el-option label="非必传" value="false"></el-option>
+                <el-col class="input" :span="4">
+                  <el-form-item label-width="0" prop="paramName">
+                    <el-input size="mini" v-model="param.type" placeholder="参数类型"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col class="input" :span="8">
+                  <el-form-item label-width="0" prop="paramName">
+                    <el-input size="mini" v-model="param.description" placeholder="参数描述"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col class="input" :span="4">
+                  <el-form-item label-width="0" prop="paramName">
+                    <el-select size="mini" v-model="param.isRequired" placeholder="是否必传">
+                      <el-option label="必传" :value="true"></el-option>
+                      <el-option label="非必传" :value="false"></el-option>
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col class="input" :span="7">
-                  <el-form-item label-width="0">
-                    <el-button size="mini" type="primary" @click="addParam">添加参数</el-button>
-                    <el-button size="mini" type="danger" @click="removeParam(index)">删除参数</el-button>
-                  </el-form-item>
+                <el-col class="input" :span="2">
+                  <div class="btns">
+                    <i class="el-icon-close" @click="removeParam(index)"></i>
+                    <i class="el-icon-plus" @click="addParam"></i>
+                    <!-- <el-button size="mini" type="primary" @click="addParam">添加参数</el-button> -->
+                    <!-- <el-button size="mini" type="danger" @click="removeParam(index)">删除参数</el-button> -->
+                  </div>
                 </el-col>
               </el-row>
             </div>
@@ -122,6 +114,7 @@
               <JsonEditor :apiIndex="apiListIndex" :apiData="curApiData" />
             </div>
           </el-form>
+
         </div>
       </el-col>
     </el-row>
@@ -146,6 +139,13 @@
         <el-button size="mini" type="primary" @click="groupModelVisible = false">确 定</el-button>
       </span>
     </el-dialog>
+
+    <!-- 文档操作 -->
+    <div class="generate-doc">
+      <el-button type="primary" @click="newDoc">新建文档</el-button>
+      <el-button type="success" @click="generateDoc('ruleForm')">更新文档</el-button>
+      <el-button type="danger">删除文档</el-button>
+    </div>
   </div>
 </template>
 
@@ -162,7 +162,7 @@ export default {
     this.apiList = this.jsonData.apiList;
     this.treeData = this.getMenuTree(this.apiList);
     this.curApiData = this.apiList[this.apiListIndex];
-    this.getBaseTemplate(this.curApiData);
+    this.getBaseInfo(this.curApiData);
   },
   data() {
     const verApiName = (rule, value, callback) => {
@@ -179,15 +179,26 @@ export default {
       treeData: [],
       apiListIndex: 0,
       curApiData: {},
-      baseTemplate: {},
-      params: [
-        {
-          paramName: "",
-          paramType: "text",
-          paramDesc: "",
-          paramRequired: "true"
-        }
-      ],
+      lastObjct: {
+        methodName: '',
+        description: '',
+        groupOwner: '',
+        methodOwner: '',
+        securityLevel: '',
+        state: '',
+        params: [
+          {
+            description: "id",
+            injectOnly: false,
+            isList: false,
+            isRequired: true,
+            isRsaEncrypt: false,
+            name: "reviewId",
+            sequence: "",
+            type: "long",
+          }
+        ],
+      },
       rules: {
         methodName: [
           { required: true, validator: verApiName, trigger: "change" }
@@ -206,30 +217,21 @@ export default {
         ],
         state: [
           { required: true, message: "请输入接口状态", trigger: "change" }
+        ],
+        paramName: [
+          { required: false, message: "参数描述不能为空", trigger: "change" }
         ]
       },
       groupModelVisible: false,
       groupSelect: [{
         value: '选项1',
         label: '黄金糕'
-      }, {
-        value: '选项2',
-        label: '双皮奶'
-      }, {
-        value: '选项3',
-        label: '蚵仔煎'
-      }, {
-        value: '选项4',
-        label: '龙须面'
-      }, {
-        value: '选项5',
-        label: '北京烤鸭'
       }],
       searchGroup: ''
     }
   },
   computed: {
-    ...mapGetters(['jsonData', 'apiGroupIndex'])
+    ...mapGetters(['jsonData', 'apiGroupIndex', 'respStructList'])
   },
   methods: {
     getMenuTree(apiList) {
@@ -266,18 +268,20 @@ export default {
       this.$store.dispatch('setApiGroupIndex', apiListIndex);
       this.apiListIndex = apiListIndex;
       this.curApiData = this.apiList[apiListIndex];
-      this.getBaseTemplate(this.curApiData);
+      this.getBaseInfo(this.curApiData);
       console.log(apiListIndex)
     },
-    getBaseTemplate(curApiData) {
-      this.baseTemplate = {
+    getBaseInfo(curApiData) {
+      console.log(curApiData)
+      this.lastObjct = Object.assign(this.lastObjct, {
         methodName: this.curApiData.methodName,
         description: this.curApiData.description,
         groupOwner: this.curApiData.groupOwner,
         methodOwner: this.curApiData.methodOwner,
         securityLevel: this.curApiData.securityLevel,
         state: 'OPEN',
-      }
+      })
+      this.lastObjct.params = curApiData.parameterInfoList;
     },
     // 生成文档
     generateDoc(formName, name) {
@@ -290,17 +294,18 @@ export default {
             type: 'success'
           });
           // 更新左侧列表
-          this.apiList[this.apiListIndex].methodName = this.baseTemplate.methodName;
+          this.apiList[this.apiListIndex].methodName = this.lastObjct.methodName;
           this.treeData = this.getMenuTree(this.apiList);
+          console.log(this.lastObjct, this.respStructList);
         } else {
-          this.$message.error("请输入接口名称");
+          // this.$message.error("请输入接口名称");
           return false;
         }
       });
     },
     // 添加参数
     addParam() {
-      this.params.push({
+      this.lastObjct.params.push({
         paramName: "",
         paramType: "text",
         paramDesc: "",
@@ -309,7 +314,11 @@ export default {
     },
     // 删除参数
     removeParam(index) {
-      this.params.splice(index, 1);
+      if(this.lastObjct.params.length > 1) {
+        this.lastObjct.params.splice(index, 1);
+      } else {
+        this.$message.error("没有可删除的参数");
+      }
     },
     // 筛选掉非法的param
     filterParams(params) {
@@ -325,7 +334,7 @@ export default {
       // 初始化现有数据
       this.apiListIndex = 0;
       this.curApiData = {};
-      this.baseTemplate = {};
+      this.lastObjct = {};
 
       this.groupSelect = this.treeData;
       this.groupModelVisible = true;
@@ -359,7 +368,7 @@ export default {
     -webkit-overflow-scrolling: touch;
     .main {
       flex: 1;
-      padding: 15px;
+      padding: 15px 15px 50px;
       background: $white;
       .el-form-item,
       .el-select {
@@ -382,6 +391,31 @@ export default {
       .el-form-item__content, .el-form-item__label {
         line-height: 30px;
       }
+    }
+  }
+  .generate-doc {
+    position: fixed;
+    left: 303px;
+    right: 30px;
+    bottom: 0;
+    background: $gray_1;
+    padding: 15px 0;
+    text-align: center;
+  }
+  .btns {
+    display: flex;
+    align-items: center;
+    height: 28px;
+    & > i {
+      margin-right: 10px;
+    }
+    .el-icon-close {
+      color: $danger;
+      cursor: pointer;
+    }
+    .el-icon-plus {
+      color: $primary;
+      cursor: pointer;
     }
   }
 }
