@@ -150,7 +150,8 @@
 </template>
 
 <script>
-import jsonData from "./../../../static/info.json";
+// import jsonData from "./../../../static/info.json";
+import { mapGetters, mapMutations } from 'vuex';
 import LeftList from "@/components/LeftList";
 import JsonEditor from "@/components/JsonEditor";
 
@@ -158,7 +159,7 @@ export default {
   name: "home-container",
   components: { LeftList, JsonEditor },
   mounted() {
-    this.apiList = jsonData.apiList;
+    this.apiList = this.jsonData.apiList;
     this.treeData = this.getMenuTree(this.apiList);
     this.curApiData = this.apiList[this.apiListIndex];
     this.getBaseTemplate(this.curApiData);
@@ -227,6 +228,9 @@ export default {
       searchGroup: ''
     }
   },
+  computed: {
+    ...mapGetters(['jsonData', 'apiGroupIndex'])
+  },
   methods: {
     getMenuTree(apiList) {
       const map = {}, dest = [];
@@ -259,8 +263,9 @@ export default {
       return dest;
     },
     getCurApiIndex(apiListIndex) {
+      this.$store.dispatch('setApiGroupIndex', apiListIndex);
       this.apiListIndex = apiListIndex;
-      this.curApiData = jsonData.apiList[apiListIndex];
+      this.curApiData = this.apiList[apiListIndex];
       this.getBaseTemplate(this.curApiData);
       console.log(apiListIndex)
     },
@@ -331,7 +336,7 @@ export default {
           done();
         })
         .catch(_ => {});
-    }
+    },
   }
 };
 </script>

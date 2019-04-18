@@ -31,8 +31,6 @@
         :index="index"
         :depth="0"
         :tree="tree(index)"
-        @addField="addField"
-        @removeField="removeField"
       />
     </div>
   </div>
@@ -41,8 +39,9 @@
 <script>
 // import jsonData from "./../../../static/info.json";
 // import mockData from "./../../../static/mock.json";
-import { nodesPath } from "@/assets/utils/nodes.js";
+// import { nodesPath } from "@/assets/utils/nodes.js";
 import TreeField from "@/components/TreeField";
+import { mapGetters } from 'vuex';
 import nanoid from 'nanoid';
 import generateSchema from "generate-schema/src/schemas/json.js";
 import ace from "brace";
@@ -65,7 +64,6 @@ export default {
   },
   data() {
     return {
-      respStructList: [],
       dialogVisible: false,
       editor: null,
       jsonState: null,
@@ -82,15 +80,21 @@ export default {
       const resList = curApi.respStructList;
       if(resList && resList.length) {
         const returnType = curApi.returnType;
-        this.respStructList = this.getJsonTree(resList, returnType);
+        this.$store.dispatch('setRespStructList', {
+          tree: null,
+          resList: this.getJsonTree(resList, returnType)
+        });
       } else {
-        this.respStructList = [{
-          desc: "",
-          isList: false,
-          name: `Field_${nanoid(5)}`,
-          nodes: [],
-          type: "string"
-        }]
+        this.$store.dispatch('setRespStructList', {
+          tree: null,
+          resList: [{
+            desc: "",
+            isList: false,
+            name: `Field_${nanoid(5)}`,
+            nodes: [],
+            type: "string"
+          }]
+        });
       }
     },
     tree(index) {
@@ -112,8 +116,7 @@ export default {
               type: node.fieldList[j].isList
                 ? `List[${node.fieldList[j].type}]`
                 : node.fieldList[j].type,
-              nodes: this.getJsonTree(data, nodeType),
-              showNodes: false
+              nodes: this.getJsonTree(data, nodeType)
             };
             itemArr.push(newNode);
           }
@@ -139,44 +142,6 @@ export default {
         newData.push(newNode);
       }
       return newData;
-    },
-    // 添加字段
-    addField(tree, index, item, tag) {
-      const { evalStr, nodesLen } = nodesPath(tree);
-      console.log(evalStr, nodesLen, tag)
-      // eval(evalStr).nodes.push(item)
-      // if(tag === 'child') {
-      //   console.log(index)
-      //   // eval(evalStr).nodes.push(item)
-      // } else {
-      //   // 递归多层时，取上一级，即当前的父级并push数据
-      //   const _evalStr = evalStr.replace(/\.nodes\[[0-9]*\]$/gi, "");
-      //   // eval(_evalStr).nodes.splice(index + 1, 0, item);
-      // }
-      // if (nodesLen > 1) {
-      //   // 递归多层时，取上一级，即当前的父级并push数据
-      //   const _evalStr = evalStr.replace(/\.nodes\[[0-9]*\]$/gi, "");
-      //   // eval(_evalStr).nodes.push(item)
-      //   if(tag === 'child') {
-      //     console.log(index)
-      //   } else {
-      //     eval(_evalStr).nodes.splice(index + 1, 0, item);
-      //   }
-      // } else {
-      //   // 只为第一层时直接push
-      //   // this.respStructList.splice(index + 1, 0, item);
-      // }
-      // console.log(this.respStructList)
-    },
-    // 删除字段
-    removeField(tree, index) {
-      const { evalStr, nodesLen } = nodesPath(tree);
-      if (nodesLen > 1) {
-        const _evalStr = evalStr.replace(/\.nodes\[[0-9]*\]$/gi, "");
-        eval(_evalStr).nodes.splice(index, 1);
-      } else {
-        this.respStructList.splice(index, 1);
-      }
     },
     // 关闭弹窗
     handleClose(done) {
@@ -211,6 +176,9 @@ export default {
     generateDoc() {
       console.log(this.respStructList);
     },
+  },
+  computed: {
+    ...mapGetters(['respStructList'])
   },
   watch: {
     apiData(newVal, oldVal) {

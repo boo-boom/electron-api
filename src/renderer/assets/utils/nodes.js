@@ -1,4 +1,4 @@
-export const nodesPath = (tree) => {
+export const nodesPath = (tree='0,', dir) => {
   // 将递归的层级进行转换
   const _tree = tree.split(",");
   _tree.splice(_tree.length - 1, 1);
@@ -6,7 +6,7 @@ export const nodesPath = (tree) => {
   let evalStr = "";
   for (let i = 0; i < _tree.length; i++) {
     if (i == 0) {
-      evalStr = `this.respStructList[${_tree[i]}]`;
+      evalStr = `${dir}[${_tree[i]}]`;
     } else {
       evalStr += `.nodes[${_tree[i]}]`;
     }

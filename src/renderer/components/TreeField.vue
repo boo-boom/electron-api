@@ -2,49 +2,48 @@
   <div class="tree-field">
     <el-row :gutter="10">
       <el-col class="indent" :span="11" :style="{paddingLeft:`${depth * 30 + 20}px`}">
-        <i :class="[`el-icon-caret-${item.showNodes?'top':'bottom'}`]" v-if="nodesLen" @click="toggle(item)"></i>
+        <i :class="[`el-icon-caret-${showChild?'top':'bottom'}`]" v-if="nodesLen" @click="toggle(container)"></i>
         <i v-else></i>
-        <el-input size="mini" placeholder="字段名" v-model="item.name"></el-input>
+        <el-input size="mini" placeholder="字段名" v-model="container.name" @focus="getFocusTree(tree)"></el-input>
       </el-col>
       <el-col :span="7">
-        <el-input size="mini" placeholder="类型" v-model="item.type" v-if="!nodesLen || !item.type"></el-input>
-        <el-tooltip class="pd-0" effect="dark" :content="item.type" placement="top" v-if="item.type && nodesLen">
-          <el-input size="mini" placeholder="类型" v-model="item.type" :change="editIsList(item)">
-            <i slot="suffix" class="el-input__icon el-icon-warning" v-if="item.isList"></i>
+        <el-input size="mini" placeholder="类型" v-model="container.type" v-if="!nodesLen || !container.type" @focus="getFocusTree(tree)"></el-input>
+        <el-tooltip class="pd-0" effect="dark" :content="container.type" placement="top" v-if="container.type && nodesLen">
+          <el-input size="mini" placeholder="类型" v-model="container.type" :change="editIsList(container)" @focus="getFocusTree(tree)">
+            <i slot="suffix" class="el-input__icon el-icon-warning" v-if="container.isList"></i>
           </el-input>
         </el-tooltip>
       </el-col>
       <el-col :span="4">
-        <el-input size="mini" placeholder="备注" v-model="item.desc" v-if="!item.desc"></el-input>
-        <el-tooltip class="pd-0" effect="dark" :content="item.desc" placement="top" v-else>
-          <el-input size="mini" placeholder="备注" v-model="item.desc"></el-input>
+        <el-input size="mini" placeholder="备注" v-model="container.desc" v-if="!container.desc" @focus="getFocusTree(tree)"></el-input>
+        <el-tooltip class="pd-0" effect="dark" :content="container.desc" placement="top" v-else>
+          <el-input size="mini" placeholder="备注" v-model="container.desc" @focus="getFocusTree(tree)"></el-input>
         </el-tooltip>
       </el-col>
       <el-col :span="2" class="btns">
         <i class="el-icon-close" @click="removeField(tree, index)"></i>
-        <el-tooltip class="pd-0" effect="dark" :content="tooltip(item.type).text" placement="top">
-          <el-button type="text" icon="el-icon-plus" @click="addField(tree, index, item)"></el-button>
+        <el-tooltip class="pd-0" effect="dark" :content="tooltip(container.type).text" placement="top">
+          <el-button type="text" icon="el-icon-plus" @click="addField(tree, index, container)"></el-button>
         </el-tooltip>
       </el-col>
     </el-row>
-    <div class="children" v-if="nodesLen && item.showNodes">
+    <div class="children" v-show="showChild" v-if="nodesLen">
       <tree-field
-        v-for="(child,idx) in item.nodes"
+        v-for="(child,idx) in container.nodes"
         :key="child.nanoid"
         :item="child"
         :index="idx"
         :depth="depth + 1"
         :tree="tree + (idx + ',')"
-        @addField="addField"
-        @removeField="removeField"
       />
     </div>
   </div>
 </template>
 
 <script>
+import { mapState, mapGetters } from 'vuex';
 import nanoid from 'nanoid';
-import { nodesPath } from "@/assets/utils/nodes.js";
+import { clone } from 'lodash';
 export default {
   name: "treeField",
   props: {
@@ -69,18 +68,52 @@ export default {
   },
   data() {
     return {
+      showChild: true,
       showListIocn: false,
+      focusTree: '',
+      container: clone(this.item),
     };
   },
   computed: {
-    nodesLen: function () {
+    nodesLen() {
       return this.item.nodes && this.item.nodes.length;
+    },
+    ...mapGetters(['jsonData'])
+  },
+  watch: {
+    'container.name' (newVal, oldVal)  {
+      if(newVal !== oldVal) {
+        this.updateApi('updateApiName', newVal);
+      }
+    },
+    'container.type' (newVal, oldVal)  {
+      if(newVal !== oldVal) {
+        this.updateApi('updateApiType', newVal);
+      }
+    },
+    'container.desc' (newVal, oldVal)  {
+      if(newVal !== oldVal) {
+        this.updateApi('updateApiDesc', newVal);
+      }
     },
   },
   methods: {
+    updateApi(name, newVal) {
+      this.$store.dispatch(name, {
+        update: true,
+        tree: this.focusTree,
+        updateName: name,
+        value: newVal,
+      });
+    },
+    getFocusTree(tree) {
+      if(this.focusTree !== tree) {
+        this.focusTree = tree;
+      }
+    },
     toggle(item) {
       if(this.nodesLen) {
-        item.showNodes = !item.showNodes;
+        this.showChild = !this.showChild;
       }
     },
     addField(tree, index, item) {
@@ -92,18 +125,24 @@ export default {
         type: "object"
       };
       const tag = this.tooltip(item.type).tag;
-      // this.$emit('addField', tree, index, _item, tag);
-      if( tag === 'child') {
-        item.nodes.push(_item);
-        console.log(item.nodes)
-        // this.$emit('addField', tree, index, _item, tag);
-        // console.log(item.name, item.type)
-      } else {
-        // this.$emit('addField', tree, index, _item, tag);
-      }
+      this.$store.dispatch('setRespStructList', {
+        add: true,
+        tree,
+        tag,
+        index,
+        item: _item
+      })
     },
     removeField(tree, index) {
-      this.$emit('removeField', tree, index);
+      // this.$store.dispatch('removeResList', {
+      //   tree,
+      //   index
+      // })
+      this.$store.dispatch('setRespStructList', {
+        remove: true,
+        tree,
+        index
+      })
     },
     // 判断是否是子节点，用于判断添加字段时的逻辑处理
     tooltip(type) {
